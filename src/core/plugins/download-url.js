@@ -8,21 +8,26 @@ export default function downloadUrlPlugin (toolbox) {
   let { fn } = toolbox
 
   const actions = {
-    download: (url)=> ({ errActions, specSelectors, specActions, getConfigs }) => {
+    download: (content)=> ({ errActions, specSelectors, specActions, getConfigs }) => {
       let { fetch } = fn
+      let url = "https://petstore.swagger.io/v2/swagger.json"
       const config = getConfigs()
       url = url || specSelectors.url()
       specActions.updateLoadingStatus("loading")
       errActions.clear({source: "fetch"})
-      fetch({
-        url,
-        loadSpec: true,
-        requestInterceptor: config.requestInterceptor || (a => a),
-        responseInterceptor: config.responseInterceptor || (a => a),
-        credentials: "same-origin",
-        headers: {
-          "Accept": "application/json,*/*"
-        }
+      // fetch({
+      //   url,
+      //   loadSpec: true,
+      //   requestInterceptor: config.requestInterceptor || (a => a),
+      //   responseInterceptor: config.responseInterceptor || (a => a),
+      //   credentials: "same-origin",
+      //   headers: {
+      //     "Accept": "application/json,*/*"
+      //   }
+      // })
+      Promise.resolve({
+        status: 200,
+        text: content  
       }).then(next,next)
 
       function next(res) {
@@ -34,7 +39,7 @@ export default function downloadUrlPlugin (toolbox) {
           return
         }
         specActions.updateLoadingStatus("success")
-        specActions.updateSpec(res.text)
+        specActions.updateSpec(content)
         if(specSelectors.url() !== url) {
           specActions.updateUrl(url)
         }
